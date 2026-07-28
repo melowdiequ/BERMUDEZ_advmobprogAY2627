@@ -1,122 +1,186 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 void main() {
-  runApp(const MyApp());
+runApp(
+ChangeNotifierProvider(
+create: (context) => ThemeProvider(),
+child: const StateManagementActivity(),
+),
+);
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+/// Manages the application's Light and Dark Mode.
+class ThemeProvider extends ChangeNotifier {
+// The application starts in Light Mode.
+ThemeMode _themeMode = ThemeMode.light;
 
-  // This widget is the root of your application.
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
-        colorScheme: .fromSeed(seedColor: Colors.deepPurple),
-      ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
-    );
-  }
+/// Returns the currently selected theme.
+ThemeMode get themeMode => _themeMode;
+
+/// Checks whether Dark Mode is enabled.
+bool get isDarkMode => _themeMode == ThemeMode.dark;
+
+/// Changes the application theme.
+void toggleTheme(bool isDarkMode) {
+if (isDarkMode) {
+_themeMode = ThemeMode.dark;
+} else {
+_themeMode = ThemeMode.light;
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
 
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
+// Updates all widgets listening to ThemeProvider.
+notifyListeners();
 
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
+}
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+/// The root widget of the application.
+class StateManagementActivity extends StatelessWidget {
+const StateManagementActivity({super.key});
 
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
-  }
+@override
+Widget build(BuildContext context) {
+// Listens to the current theme from ThemeProvider.
+final themeProvider = Provider.of<ThemeProvider>(context);
 
-  @override
-  Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
-    return Scaffold(
-      appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
-      ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          //
-          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-          // action in the IDE, or press "p" in the console), to see the
-          // wireframe for each widget.
-          mainAxisAlignment: .center,
-          children: [
-            const Text('You have pushed the button this many times:'),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
+return MaterialApp(
+  // Removes the red DEBUG banner.
+  debugShowCheckedModeBanner: false,
+
+  // Sets the application title.
+  title: 'State Management Activity',
+
+  // Uses Flutter's default Light Mode theme.
+  theme: ThemeData.light(),
+
+  // Uses Flutter's default Dark Mode theme.
+  darkTheme: ThemeData.dark(),
+
+  // Applies the selected theme.
+  themeMode: themeProvider.themeMode,
+
+  // The Counter Screen is the application's home screen.
+  home: const CounterScreen(),
+);
+
+}
+}
+
+/// CounterScreen demonstrates Ephemeral State.
+class CounterScreen extends StatefulWidget {
+const CounterScreen({super.key});
+
+@override
+State<CounterScreen> createState() => _CounterScreenState();
+}
+
+/// Stores and manages the local counter value.
+class _CounterScreenState extends State<CounterScreen> {
+// The counter starts at zero.
+int _counter = 0;
+
+/// Increases the counter value by one.
+
+void _incrementCounter() {
+setState(() {
+_counter++;
+});
+}
+
+@override
+Widget build(BuildContext context) {
+return Scaffold(
+// Displays the Counter Screen title and Settings button.
+appBar: AppBar(
+title: const Text('Ephemeral State'),
+
+    // Places the Settings icon on the top-right.
+    actions: [
+      IconButton(
+        icon: const Icon(Icons.settings),
+
+        // Opens the separate Theme Screen.
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const ThemeScreen(),
             ),
-          ],
+          );
+        },
+
+        tooltip: 'Theme Settings',
+      ),
+    ],
+  ),
+
+  // Displays the counter.
+  body: Center(
+    child: Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        const Text(
+          'You have pushed the button this many times:',
         ),
+
+        // Displays the current counter value.
+        Text(
+          '$_counter',
+          style: Theme.of(
+            context,
+          ).textTheme.headlineMedium,
+        ),
+      ],
+    ),
+  ),
+
+  // Increases the counter when pressed.
+  floatingActionButton: FloatingActionButton(
+    onPressed: _incrementCounter,
+    tooltip: 'Increment',
+    child: const Icon(Icons.add),
+  ),
+);
+
+}
+}
+
+/// ThemeScreen demonstrates App State using Provider.
+class ThemeScreen extends StatelessWidget {
+const ThemeScreen({super.key});
+
+@override
+Widget build(BuildContext context) {
+// Listens to ThemeProvider for theme changes.
+final themeProvider = Provider.of<ThemeProvider>(context);
+
+return Scaffold(
+  // Displays the Theme Screen title.
+  appBar: AppBar(
+    title: const Text('Theme Settings'),
+  ),
+
+  // Displays the Light/Dark Mode switch.
+  body: Center(
+    child: SwitchListTile(
+      title: const Text('Dark Mode'),
+
+      subtitle: Text(
+        themeProvider.isDarkMode
+            ? 'Dark Mode is enabled'
+            : 'Light Mode is enabled',
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ),
-    );
-  }
+
+      // Shows whether Dark Mode is enabled.
+      value: themeProvider.isDarkMode,
+
+      // Changes the theme when the switch is pressed.
+      onChanged: themeProvider.toggleTheme,
+    ),
+  ),
+);
+
+}
 }
