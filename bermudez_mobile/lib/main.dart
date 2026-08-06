@@ -1,186 +1,213 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 
-void main() {
-runApp(
-ChangeNotifierProvider(
-create: (context) => ThemeProvider(),
-child: const StateManagementActivity(),
-),
-);
-}
-
-/// Manages the application's Light and Dark Mode.
-class ThemeProvider extends ChangeNotifier {
-// The application starts in Light Mode.
-ThemeMode _themeMode = ThemeMode.light;
-
-/// Returns the currently selected theme.
-ThemeMode get themeMode => _themeMode;
-
-/// Checks whether Dark Mode is enabled.
-bool get isDarkMode => _themeMode == ThemeMode.dark;
-
-/// Changes the application theme.
-void toggleTheme(bool isDarkMode) {
-if (isDarkMode) {
-_themeMode = ThemeMode.dark;
-} else {
-_themeMode = ThemeMode.light;
-}
+import 'screens/home_screen.dart';
+import 'providers/theme_provider.dart';
 
 
-// Updates all widgets listening to ThemeProvider.
-notifyListeners();
+
+void main() async {
+
+  WidgetsFlutterBinding.ensureInitialized();
+
+
+  await dotenv.load(
+
+    fileName: "assets/.env",
+
+  );
+
+
+  runApp(
+
+    ChangeNotifierProvider(
+
+      create: (_) => ThemeProvider(),
+
+      child: const MyApp(),
+
+    ),
+
+  );
 
 }
-}
 
-/// The root widget of the application.
-class StateManagementActivity extends StatelessWidget {
-const StateManagementActivity({super.key});
 
-@override
-Widget build(BuildContext context) {
-// Listens to the current theme from ThemeProvider.
-final themeProvider = Provider.of<ThemeProvider>(context);
 
-return MaterialApp(
-  // Removes the red DEBUG banner.
-  debugShowCheckedModeBanner: false,
+class MyApp extends StatelessWidget {
 
-  // Sets the application title.
-  title: 'State Management Activity',
 
-  // Uses Flutter's default Light Mode theme.
-  theme: ThemeData.light(),
+  const MyApp({super.key});
 
-  // Uses Flutter's default Dark Mode theme.
-  darkTheme: ThemeData.dark(),
 
-  // Applies the selected theme.
-  themeMode: themeProvider.themeMode,
 
-  // The Counter Screen is the application's home screen.
-  home: const CounterScreen(),
-);
+  @override
+  Widget build(BuildContext context) {
 
-}
-}
 
-/// CounterScreen demonstrates Ephemeral State.
-class CounterScreen extends StatefulWidget {
-const CounterScreen({super.key});
+    final themeProvider =
+    context.watch<ThemeProvider>();
 
-@override
-State<CounterScreen> createState() => _CounterScreenState();
-}
 
-/// Stores and manages the local counter value.
-class _CounterScreenState extends State<CounterScreen> {
-// The counter starts at zero.
-int _counter = 0;
 
-/// Increases the counter value by one.
+    return ScreenUtilInit(
 
-void _incrementCounter() {
-setState(() {
-_counter++;
-});
-}
+      designSize: const Size(412, 715),
 
-@override
-Widget build(BuildContext context) {
-return Scaffold(
-// Displays the Counter Screen title and Settings button.
-appBar: AppBar(
-title: const Text('Ephemeral State'),
+      minTextAdapt: true,
 
-    // Places the Settings icon on the top-right.
-    actions: [
-      IconButton(
-        icon: const Icon(Icons.settings),
 
-        // Opens the separate Theme Screen.
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const ThemeScreen(),
+      builder: (context, child) {
+
+
+        return MaterialApp(
+
+          debugShowCheckedModeBanner: false,
+
+
+          themeMode:
+
+          themeProvider.isDarkMode
+
+              ? ThemeMode.dark
+
+              : ThemeMode.light,
+
+
+
+          theme: ThemeData(
+
+            brightness: Brightness.light,
+
+            fontFamily: "Poppins",
+
+
+            scaffoldBackgroundColor:
+
+            const Color(0xFFF8F8F8),
+
+
+
+            colorScheme:
+
+            ColorScheme.fromSeed(
+
+              seedColor:
+              const Color(0xFF003566),
+
+              primary:
+              const Color(0xFF003566),
+
+              secondary:
+              const Color(0xFFCCA000),
+
             ),
-          );
-        },
 
-        tooltip: 'Theme Settings',
-      ),
-    ],
-  ),
 
-  // Displays the counter.
-  body: Center(
-    child: Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        const Text(
-          'You have pushed the button this many times:',
-        ),
 
-        // Displays the current counter value.
-        Text(
-          '$_counter',
-          style: Theme.of(
-            context,
-          ).textTheme.headlineMedium,
-        ),
-      ],
-    ),
-  ),
+            appBarTheme:
 
-  // Increases the counter when pressed.
-  floatingActionButton: FloatingActionButton(
-    onPressed: _incrementCounter,
-    tooltip: 'Increment',
-    child: const Icon(Icons.add),
-  ),
-);
+            const AppBarTheme(
 
-}
-}
+              backgroundColor:
+              Color(0xFF001D3D),
 
-/// ThemeScreen demonstrates App State using Provider.
-class ThemeScreen extends StatelessWidget {
-const ThemeScreen({super.key});
+              foregroundColor:
+              Colors.white,
 
-@override
-Widget build(BuildContext context) {
-// Listens to ThemeProvider for theme changes.
-final themeProvider = Provider.of<ThemeProvider>(context);
+            ),
 
-return Scaffold(
-  // Displays the Theme Screen title.
-  appBar: AppBar(
-    title: const Text('Theme Settings'),
-  ),
 
-  // Displays the Light/Dark Mode switch.
-  body: Center(
-    child: SwitchListTile(
-      title: const Text('Dark Mode'),
 
-      subtitle: Text(
-        themeProvider.isDarkMode
-            ? 'Dark Mode is enabled'
-            : 'Light Mode is enabled',
-      ),
+            cardTheme:
 
-      // Shows whether Dark Mode is enabled.
-      value: themeProvider.isDarkMode,
+            CardThemeData(
 
-      // Changes the theme when the switch is pressed.
-      onChanged: themeProvider.toggleTheme,
-    ),
-  ),
-);
+              elevation: 4,
 
-}
+              color: Colors.white,
+
+              shape:
+
+              RoundedRectangleBorder(
+
+                borderRadius:
+                BorderRadius.circular(16),
+
+              ),
+
+            ),
+
+
+          ),
+
+
+
+          darkTheme: ThemeData(
+
+            brightness: Brightness.dark,
+
+            fontFamily: "Poppins",
+
+
+
+            scaffoldBackgroundColor:
+
+            const Color(0xFF000814),
+
+
+
+            colorScheme:
+
+            ColorScheme.fromSeed(
+
+              brightness:
+              Brightness.dark,
+
+              seedColor:
+              const Color(0xFFCCA000),
+
+              primary:
+              const Color(0xFF003566),
+
+              secondary:
+              const Color(0xFFF0CB46),
+
+            ),
+
+
+
+            appBarTheme:
+
+            const AppBarTheme(
+
+              backgroundColor:
+              Color(0xFF000814),
+
+              foregroundColor:
+              Colors.white,
+
+            ),
+
+
+          ),
+
+
+
+          home: const HomeScreen(),
+
+
+        );
+
+
+      },
+
+    );
+
+
+  }
+
+
 }
