@@ -4,600 +4,351 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../models/product.dart';
 import '../services/product_service.dart';
 import '../widgets/product_card.dart';
-
-import '../screens/product_screen.dart';
+import 'product_screen.dart';
 import 'settings_screen.dart';
-
-
+import 'cart_screen.dart';
 
 class HomeScreen extends StatefulWidget {
-
-  const HomeScreen({super.key});
-
+  const HomeScreen({
+    super.key,
+  });
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
-
+  State<HomeScreen> createState() =>
+      _HomeScreenState();
 }
 
-
-
 class _HomeScreenState extends State<HomeScreen> {
-
-
   final ProductService _productService =
-  ProductService();
-
-
+      ProductService();
 
   late Future<List<Product>> products;
 
-
-
-  // Enhancement 1: Search functionality
-
   final TextEditingController _searchController =
-  TextEditingController();
-
-
+      TextEditingController();
 
   List<Product> filteredProducts = [];
 
-
+  bool _productsInitialized = false;
 
   @override
   void initState() {
-
     super.initState();
 
     products = _productService.getAllProducts();
-
   }
-
-
 
   void searchProducts(
-
-      String query,
-
-      List<Product> productList
-
-      ) {
-
-
+    String query,
+    List<Product> productList,
+  ) {
     setState(() {
-
-
-      if(query.isEmpty) {
-
-
-        filteredProducts = productList;
-
-
-      }
-
-      else {
-
-
+      if (query.isEmpty) {
         filteredProducts =
-
+            List.from(productList);
+      } else {
+        filteredProducts =
             productList.where((product) {
-
-
-              return product.title
-
-                  .toLowerCase()
-
-                  .contains(
-
-                  query.toLowerCase()
-
+          return product.title
+              .toLowerCase()
+              .contains(
+                query.toLowerCase(),
               );
-
-
-            }).toList();
-
-
+        }).toList();
       }
-
-
     });
-
-
   }
-
-
-
 
   @override
   void dispose() {
-
     _searchController.dispose();
 
     super.dispose();
-
   }
-
-
-
 
   @override
-  Widget build(BuildContext context) {
-
-
+  Widget build(
+    BuildContext context,
+  ) {
     return Scaffold(
-
-
+      backgroundColor:
+          Theme.of(context)
+              .scaffoldBackgroundColor,
 
       appBar: AppBar(
-
-
         backgroundColor:
+            const Color(0xFF001D3D),
 
-        const Color(0xFF001D3D),
-
-
+        elevation: 0,
 
         title: Image.asset(
-
-
           "assets/images/nubdexchange_logo.png",
-
-
-
           height: 45.h,
-
-
-
         ),
 
-
-
-
         actions: [
-
-
-
-          // Enhancement 3: Settings page
-
-
           IconButton(
-
-
-
             icon: const Icon(
-
               Icons.settings,
-
-              color: Color(0xFFF0CB46),
-
+              color: Color(
+                0xFFF0CB46,
+              ),
             ),
-
-
-
             onPressed: () {
-
-
               Navigator.push(
-
-
                 context,
-
-
                 MaterialPageRoute(
-
-
                   builder: (_) =>
-
-                  const SettingsScreen(),
-
-
-
+                      const SettingsScreen(),
                 ),
-
-
-
               );
-
-
             },
-
-
           ),
 
-
+          SizedBox(
+            width: 5.w,
+          ),
         ],
-
-
-
       ),
-
-
-
-
 
       body: FutureBuilder<List<Product>>(
-
-
-
         future: products,
 
-
-
-
         builder: (context, snapshot) {
-
-
-
-          if(snapshot.connectionState ==
-
+          if (snapshot.connectionState ==
               ConnectionState.waiting) {
-
-
-
             return const Center(
-
               child: CircularProgressIndicator(
-
-                color: Color(0xFFCCA000),
-
-              ),
-
-            );
-
-
-          }
-
-
-
-
-          if(snapshot.hasError) {
-
-
-            return Center(
-
-              child: Text(
-
-                "Error loading products",
-
-                style: TextStyle(
-
-                  fontFamily: "Poppins",
-
-                  color: Theme.of(context)
-
-                      .colorScheme
-
-                      .primary,
-
+                color: Color(
+                  0xFFCCA000,
                 ),
-
               ),
-
             );
-
-
           }
 
-
-
-
-          final productList =
-
-          snapshot.data ?? [];
-
-
-
-
-          if(filteredProducts.isEmpty) {
-
-
-            filteredProducts = productList;
-
-
+          if (snapshot.hasError) {
+            return Center(
+              child: Text(
+                "Error loading products",
+                style: TextStyle(
+                  fontFamily: "Poppins",
+                  color: Theme.of(context)
+                      .colorScheme
+                      .primary,
+                ),
+              ),
+            );
           }
 
+          final List<Product> productList =
+              snapshot.data ?? [];
 
+          if (!_productsInitialized) {
+            filteredProducts =
+                List.from(productList);
 
+            _productsInitialized = true;
+          }
 
           return Column(
-
-
-
             children: [
-
-
-
-
-              // Enhancement 1: Search bar
-
-
               Padding(
-
-
-                padding:
-
-                EdgeInsets.all(12.w),
-
-
-
+                padding: EdgeInsets.all(
+                  12.w,
+                ),
                 child: TextField(
-
-
-
                   controller:
-
-                  _searchController,
-
-
-
+                      _searchController,
 
                   onChanged: (value) {
-
-
                     searchProducts(
-
                       value,
-
                       productList,
-
                     );
-
-
                   },
-
-
-
 
                   decoration: InputDecoration(
-
-
-
                     hintText:
-
-                    "Search products",
-
-
-
+                        "Search products",
 
                     prefixIcon:
-
-                    const Icon(
-
-
+                        const Icon(
                       Icons.search,
-
-
-                      color:
-
-                      Color(0xFF003566),
-
-
+                      color: Color(
+                        0xFF003566,
+                      ),
                     ),
 
-
-
-
-
-                    filled:
-
-                    true,
-
-
-
-
-
+                    filled: true,
                     fillColor:
-
-                    Colors.white,
-
-
-
-
+                        Colors.white,
 
                     border:
-
-                    OutlineInputBorder(
-
-
-
+                        OutlineInputBorder(
                       borderRadius:
-
-                      BorderRadius.circular(16),
-
-
-
+                          BorderRadius.circular(
+                        16.r,
+                      ),
                       borderSide:
-
-                      BorderSide.none,
-
-
-
+                          BorderSide.none,
                     ),
-
-
-
                   ),
-
-
-
                 ),
-
-
-
               ),
-
-
-
-
-
 
               Expanded(
-
-
-
                 child:
-
-                GridView.builder(
-
-
-
-
-                  padding:
-
-                  EdgeInsets.all(12.w),
-
-
-
-
-                  gridDelegate:
-
-                  const SliverGridDelegateWithFixedCrossAxisCount(
-
-
-
-                    crossAxisCount: 2,
-
-
-
-                    crossAxisSpacing: 12,
-
-
-
-                    mainAxisSpacing: 12,
-
-
-
-                    childAspectRatio: 0.65,
-
-
-
-                  ),
-
-
-
-
-
-
-                  itemCount:
-
-                  filteredProducts.length,
-
-
-
-
-
-
-
-                  itemBuilder:
-
-                      (context, index) {
-
-
-
-                    final product =
-
-                    filteredProducts[index];
-
-
-
-
-
-
-// Enhancement 2: Navigate to product details page
-                    return ProductCard(
-
-
-
-                      product:
-
-                      product,
-
-
-
-
-
-                      onTap: () {
-
-
-
-                        Navigator.push(
-
-
-
-                          context,
-
-
-
-                          MaterialPageRoute(
-
-
-
-                            builder: (_) =>
-
-                            ProductScreen(
-
-
-
-                              product:
-
-                              product,
-
-
-
+                    filteredProducts.isEmpty
+                        ? Center(
+                            child: Text(
+                              "No products found",
+                              style: TextStyle(
+                                fontFamily:
+                                    "Poppins",
+                                fontSize:
+                                    14.sp,
+                              ),
+                            ),
+                          )
+                        : GridView.builder(
+                            padding:
+                                EdgeInsets.all(
+                              12.w,
                             ),
 
+                            gridDelegate:
+                                const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount:
+                                  2,
+                              crossAxisSpacing:
+                                  12,
+                              mainAxisSpacing:
+                                  12,
+                              childAspectRatio:
+                                  0.65,
+                            ),
 
+                            itemCount:
+                                filteredProducts
+                                    .length,
 
+                            itemBuilder:
+                                (
+                              context,
+                              index,
+                            ) {
+                              final product =
+                                  filteredProducts[
+                                      index];
+
+                              // Lab Activity 2 - Enhancement 2: Opens the existing ProductScreen.
+                              return ProductCard(
+                                product:
+                                    product,
+                                onTap:
+                                    () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder:
+                                          (_) =>
+                                              ProductScreen(
+                                        product:
+                                            product,
+                                      ),
+                                    ),
+                                  );
+                                },
+                              );
+                            },
                           ),
-
-
-
-                        );
-
-
-
-                      },
-
-
-
-                    );
-
-
-
-
-                  },
-
-
-
-                ),
-
-
-
               ),
-
-
-
             ],
-
-
-
           );
-
-
-
         },
-
-
-
       ),
 
+      // Lab Activity 3 - Enhancement 2:
+      // Chat FloatingActionButton
+      floatingActionButton:
+          FloatingActionButton(
+        backgroundColor:
+            const Color(
+          0xFFF0CB46,
+        ),
 
+        foregroundColor:
+            const Color(
+          0xFF001D3D,
+        ),
 
+        elevation: 5,
+
+        tooltip: "Chat",
+
+        onPressed: () {
+          ScaffoldMessenger.of(context)
+              .showSnackBar(
+            const SnackBar(
+              content: Text(
+                "Chat selected",
+              ),
+            ),
+          );
+        },
+
+        child: const Icon(
+          Icons.chat,
+        ),
+      ),
+
+      floatingActionButtonLocation:
+          FloatingActionButtonLocation
+              .endFloat,
+
+      bottomNavigationBar:
+          BottomNavigationBar(
+        currentIndex: 0,
+
+        type:
+            BottomNavigationBarType.fixed,
+
+        selectedItemColor:
+            const Color(
+          0xFFCCA000,
+        ),
+
+        unselectedItemColor:
+            Colors.grey,
+
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(
+              Icons.home,
+            ),
+            label: "Home",
+          ),
+
+          BottomNavigationBarItem(
+            icon: Icon(
+              Icons.shopping_cart,
+            ),
+            label: "Cart",
+          ),
+        ],
+
+        onTap: (index) {
+          if (index == 1) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) =>
+                    const CartScreen(),
+              ),
+            );
+          }
+        },
+      ),
     );
-
-
   }
-
-
 }
