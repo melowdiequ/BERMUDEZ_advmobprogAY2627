@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-import '../constants/constants.dart';
 import '../models/cart.dart';
 import '../services/cart_service.dart';
 import '../services/product_service.dart';
+import '../services/user_service.dart';
 import 'product_screen.dart';
 import 'settings_screen.dart';
 
@@ -14,13 +14,20 @@ class CartScreen extends StatefulWidget {
   });
 
   @override
-  State<CartScreen> createState() => _CartScreenState();
+  State<CartScreen> createState() =>
+      _CartScreenState();
 }
 
-class _CartScreenState extends State<CartScreen> {
-  final CartService _cartService = CartService();
+class _CartScreenState
+    extends State<CartScreen> {
+  final CartService _cartService =
+      CartService();
 
-  final ProductService _productService = ProductService();
+  final ProductService _productService =
+      ProductService();
+
+  final UserService _userService =
+      UserService();
 
   Future<Cart>? cart;
 
@@ -32,9 +39,22 @@ class _CartScreenState extends State<CartScreen> {
   void initState() {
     super.initState();
 
-    // Lab Activity 3 - Enhancement 3: Retrieve only one user's cart.
-    cart = _cartService.getCartByUserId(
-      cartUserId,
+    // Lab Activity 4 - Enhancement 3: Loads the saved authenticated user's ID and renders that user's cart.
+    cart = _loadSavedUserCart();
+  }
+
+  Future<Cart> _loadSavedUserCart() async {
+    final currentUser =
+        await _userService.getUser();
+
+    if (currentUser.id <= 0) {
+      throw Exception(
+        "No saved user ID found",
+      );
+    }
+
+    return _cartService.getCartByUserId(
+      currentUser.id,
     );
   }
 
@@ -45,8 +65,10 @@ class _CartScreenState extends State<CartScreen> {
       return;
     }
 
-    for (final product in userCart.products) {
-      _quantities[product.id] = product.quantity;
+    for (final product
+        in userCart.products) {
+      _quantities[product.id] =
+          product.quantity;
     }
 
     _quantitiesInitialized = true;
@@ -87,7 +109,8 @@ class _CartScreenState extends State<CartScreen> {
   ) {
     double subtotal = 0;
 
-    for (final product in userCart.products) {
+    for (final product
+        in userCart.products) {
       final quantity =
           _quantities[product.id] ??
               product.quantity;
@@ -104,31 +127,35 @@ class _CartScreenState extends State<CartScreen> {
   ) {
     double discountedTotal = 0;
 
-    for (final product in userCart.products) {
+    for (final product
+        in userCart.products) {
       final quantity =
           _quantities[product.id] ??
               product.quantity;
 
       final discount =
-          product.discountPercentage / 100;
+          product.discountPercentage /
+              100;
 
       final discountedPrice =
-          product.price * (1 - discount);
+          product.price *
+              (1 - discount);
 
       discountedTotal +=
-          discountedPrice * quantity;
+          discountedPrice *
+              quantity;
     }
 
     return discountedTotal;
   }
 
-  // Lab Activity 3 - Enhancement 1: Clicking a cart item opens the same
   Future<void> openProduct(
     CartProduct cartProduct,
   ) async {
     try {
       final product =
-          await _productService.getProductById(
+          await _productService
+              .getProductById(
         cartProduct.id,
       );
 
@@ -139,7 +166,8 @@ class _CartScreenState extends State<CartScreen> {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (_) => ProductScreen(
+          builder: (_) =>
+              ProductScreen(
             product: product,
           ),
         ),
@@ -149,7 +177,8 @@ class _CartScreenState extends State<CartScreen> {
         return;
       }
 
-      ScaffoldMessenger.of(context).showSnackBar(
+      ScaffoldMessenger.of(context)
+          .showSnackBar(
         SnackBar(
           content: Text(
             "Error loading product: $e",
@@ -165,18 +194,22 @@ class _CartScreenState extends State<CartScreen> {
   ) {
     return Scaffold(
       backgroundColor:
-          Theme.of(context).scaffoldBackgroundColor,
+          Theme.of(context)
+              .scaffoldBackgroundColor,
 
       appBar: AppBar(
         backgroundColor:
-            const Color(0xFF001D3D),
+            const Color(
+          0xFF001D3D,
+        ),
 
         elevation: 0,
 
         title: const Text(
           "Cart",
           style: TextStyle(
-            fontWeight: FontWeight.w600,
+            fontWeight:
+                FontWeight.w600,
           ),
         ),
 
@@ -184,8 +217,11 @@ class _CartScreenState extends State<CartScreen> {
           IconButton(
             icon: const Icon(
               Icons.settings,
-              color: Color(0xFFF0CB46),
+              color: Color(
+                0xFFF0CB46,
+              ),
             ),
+
             onPressed: () {
               Navigator.push(
                 context,
@@ -221,7 +257,8 @@ class _CartScreenState extends State<CartScreen> {
           if (snapshot.hasError) {
             return Center(
               child: Padding(
-                padding: EdgeInsets.all(
+                padding:
+                    EdgeInsets.all(
                   20.w,
                 ),
 
@@ -243,8 +280,10 @@ class _CartScreenState extends State<CartScreen> {
                     Text(
                       "Error loading cart",
                       style: TextStyle(
-                        fontFamily: "Poppins",
-                        fontSize: 18.sp,
+                        fontFamily:
+                            "Poppins",
+                        fontSize:
+                            18.sp,
                         fontWeight:
                             FontWeight.bold,
                       ),
@@ -297,7 +336,8 @@ class _CartScreenState extends State<CartScreen> {
           return Column(
             children: [
               Expanded(
-                child: ListView.builder(
+                child:
+                    ListView.builder(
                   padding:
                       EdgeInsets.fromLTRB(
                     14.w,
@@ -307,12 +347,17 @@ class _CartScreenState extends State<CartScreen> {
                   ),
 
                   itemCount:
-                      userCart.products.length,
+                      userCart
+                          .products.length,
 
                   itemBuilder:
-                      (context, index) {
+                      (
+                    context,
+                    index,
+                  ) {
                     final CartProduct product =
-                        userCart.products[index];
+                        userCart
+                            .products[index];
 
                     final int quantity =
                         _quantities[
@@ -322,12 +367,14 @@ class _CartScreenState extends State<CartScreen> {
                     return Container(
                       margin:
                           EdgeInsets.only(
-                        bottom: 13.h,
+                        bottom:
+                            13.h,
                       ),
 
                       decoration:
                           BoxDecoration(
-                        color: Theme.of(
+                        color:
+                            Theme.of(
                           context,
                         ).cardColor,
 
@@ -338,13 +385,14 @@ class _CartScreenState extends State<CartScreen> {
 
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black
+                            color: Colors
+                                .black
                                 .withValues(
-                              alpha: 0.06,
+                              alpha:
+                                  0.06,
                             ),
-
-                            blurRadius: 10,
-
+                            blurRadius:
+                                10,
                             offset:
                                 const Offset(
                               0,
@@ -400,7 +448,8 @@ class _CartScreenState extends State<CartScreen> {
                                   ),
                                 ),
 
-                                child: ClipRRect(
+                                child:
+                                    ClipRRect(
                                   borderRadius:
                                       BorderRadius
                                           .circular(
@@ -409,7 +458,8 @@ class _CartScreenState extends State<CartScreen> {
 
                                   child:
                                       Image.network(
-                                    product.thumbnail,
+                                    product
+                                        .thumbnail,
 
                                     fit:
                                         BoxFit.contain,
@@ -423,11 +473,10 @@ class _CartScreenState extends State<CartScreen> {
                                       return Icon(
                                         Icons
                                             .image_not_supported_outlined,
-
                                         color:
                                             Colors.grey,
-
-                                        size: 30.sp,
+                                        size:
+                                            30.sp,
                                       );
                                     },
                                   ),
@@ -450,7 +499,8 @@ class _CartScreenState extends State<CartScreen> {
 
                                   children: [
                                     Text(
-                                      product.title,
+                                      product
+                                          .title,
 
                                       maxLines: 2,
 
@@ -462,10 +512,8 @@ class _CartScreenState extends State<CartScreen> {
                                           TextStyle(
                                         fontFamily:
                                             "Poppins",
-
                                         fontSize:
                                             13.sp,
-
                                         fontWeight:
                                             FontWeight
                                                 .w600,
@@ -483,14 +531,11 @@ class _CartScreenState extends State<CartScreen> {
                                           TextStyle(
                                         fontFamily:
                                             "Poppins",
-
                                         fontSize:
                                             15.sp,
-
                                         fontWeight:
                                             FontWeight
                                                 .bold,
-
                                         color:
                                             const Color(
                                           0xFFCCA000,
@@ -509,13 +554,12 @@ class _CartScreenState extends State<CartScreen> {
                                           TextStyle(
                                         fontFamily:
                                             "Poppins",
-
                                         fontSize:
                                             10.sp,
-
-                                        color: Colors
-                                            .grey
-                                            .shade600,
+                                        color:
+                                            Colors
+                                                .grey
+                                                .shade600,
                                       ),
                                     ),
                                   ],
@@ -531,8 +575,10 @@ class _CartScreenState extends State<CartScreen> {
 
                                 padding:
                                     EdgeInsets.symmetric(
-                                  horizontal: 5.w,
-                                  vertical: 4.h,
+                                  horizontal:
+                                      5.w,
+                                  vertical:
+                                      4.h,
                                 ),
 
                                 decoration:
@@ -550,17 +596,14 @@ class _CartScreenState extends State<CartScreen> {
 
                                 child: Row(
                                   mainAxisSize:
-                                      MainAxisSize.min,
-
-                                  mainAxisAlignment:
-                                      MainAxisAlignment
-                                          .center,
+                                      MainAxisSize
+                                          .min,
 
                                   children: [
-                                    // MINUS
                                     SizedBox(
                                       width: 30.w,
-                                      height: 30.w,
+                                      height:
+                                          30.w,
 
                                       child:
                                           Material(
@@ -573,22 +616,27 @@ class _CartScreenState extends State<CartScreen> {
                                           8.r,
                                         ),
 
-                                        child: InkWell(
+                                        child:
+                                            InkWell(
                                           borderRadius:
                                               BorderRadius
                                                   .circular(
                                             8.r,
                                           ),
 
-                                          onTap: () {
+                                          onTap:
+                                              () {
                                             decreaseQuantity(
                                               product,
                                             );
                                           },
 
-                                          child: Icon(
-                                            Icons.remove,
-                                            size: 17.sp,
+                                          child:
+                                              Icon(
+                                            Icons
+                                                .remove,
+                                            size:
+                                                17.sp,
                                             color:
                                                 const Color(
                                               0xFF001D3D,
@@ -602,13 +650,11 @@ class _CartScreenState extends State<CartScreen> {
                                       width: 7.w,
                                     ),
 
-                                    // QUANTITY
                                     SizedBox(
                                       width: 26.w,
 
                                       child: Text(
                                         "$quantity",
-
                                         textAlign:
                                             TextAlign
                                                 .center,
@@ -617,14 +663,11 @@ class _CartScreenState extends State<CartScreen> {
                                             TextStyle(
                                           fontFamily:
                                               "Poppins",
-
                                           fontSize:
                                               13.sp,
-
                                           fontWeight:
                                               FontWeight
                                                   .bold,
-
                                           color:
                                               const Color(
                                             0xFF001D3D,
@@ -637,10 +680,10 @@ class _CartScreenState extends State<CartScreen> {
                                       width: 7.w,
                                     ),
 
-                                    // PLUS
                                     SizedBox(
                                       width: 30.w,
-                                      height: 30.w,
+                                      height:
+                                          30.w,
 
                                       child:
                                           Material(
@@ -655,22 +698,26 @@ class _CartScreenState extends State<CartScreen> {
                                           8.r,
                                         ),
 
-                                        child: InkWell(
+                                        child:
+                                            InkWell(
                                           borderRadius:
                                               BorderRadius
                                                   .circular(
                                             8.r,
                                           ),
 
-                                          onTap: () {
+                                          onTap:
+                                              () {
                                             increaseQuantity(
                                               product,
                                             );
                                           },
 
-                                          child: Icon(
+                                          child:
+                                              Icon(
                                             Icons.add,
-                                            size: 17.sp,
+                                            size:
+                                                17.sp,
                                             color:
                                                 const Color(
                                               0xFF001D3D,
@@ -691,9 +738,9 @@ class _CartScreenState extends State<CartScreen> {
                 ),
               ),
 
-              // ORDER SUMMARY
               Container(
-                width: double.infinity,
+                width:
+                    double.infinity,
 
                 padding:
                     EdgeInsets.fromLTRB(
@@ -715,9 +762,7 @@ class _CartScreenState extends State<CartScreen> {
                           .withValues(
                         alpha: 0.07,
                       ),
-
                       blurRadius: 10,
-
                       offset:
                           const Offset(
                         0,
@@ -737,14 +782,10 @@ class _CartScreenState extends State<CartScreen> {
                       children: [
                         Text(
                           "Subtotal",
-
-                          style:
-                              TextStyle(
+                          style: TextStyle(
                             fontFamily:
                                 "Poppins",
-
                             fontSize: 13.sp,
-
                             color: Colors
                                 .grey
                                 .shade700,
@@ -753,16 +794,13 @@ class _CartScreenState extends State<CartScreen> {
 
                         Text(
                           "\$${subtotal.toStringAsFixed(2)}",
-
-                          style:
-                              TextStyle(
+                          style: TextStyle(
                             fontFamily:
                                 "Poppins",
-
                             fontSize: 14.sp,
-
                             fontWeight:
-                                FontWeight.w600,
+                                FontWeight
+                                    .w600,
                           ),
                         ),
                       ],
@@ -780,14 +818,10 @@ class _CartScreenState extends State<CartScreen> {
                       children: [
                         Text(
                           "Discount",
-
-                          style:
-                              TextStyle(
+                          style: TextStyle(
                             fontFamily:
                                 "Poppins",
-
                             fontSize: 13.sp,
-
                             color: Colors
                                 .grey
                                 .shade700,
@@ -796,17 +830,13 @@ class _CartScreenState extends State<CartScreen> {
 
                         Text(
                           "-\$${savings.toStringAsFixed(2)}",
-
-                          style:
-                              TextStyle(
+                          style: TextStyle(
                             fontFamily:
                                 "Poppins",
-
                             fontSize: 13.sp,
-
                             fontWeight:
-                                FontWeight.w600,
-
+                                FontWeight
+                                    .w600,
                             color:
                                 Colors.green,
                           ),
@@ -835,32 +865,25 @@ class _CartScreenState extends State<CartScreen> {
                       children: [
                         Text(
                           "Total",
-
-                          style:
-                              TextStyle(
+                          style: TextStyle(
                             fontFamily:
                                 "Poppins",
-
                             fontSize: 15.sp,
-
                             fontWeight:
-                                FontWeight.bold,
+                                FontWeight
+                                    .bold,
                           ),
                         ),
 
                         Text(
                           "\$${discountedTotal.toStringAsFixed(2)}",
-
-                          style:
-                              TextStyle(
+                          style: TextStyle(
                             fontFamily:
                                 "Poppins",
-
                             fontSize: 19.sp,
-
                             fontWeight:
-                                FontWeight.bold,
-
+                                FontWeight
+                                    .bold,
                             color:
                                 const Color(
                               0xFFCCA000,
@@ -887,21 +910,17 @@ class _CartScreenState extends State<CartScreen> {
                               const Color(
                             0xFFF0CB46,
                           ),
-
                           foregroundColor:
                               const Color(
                             0xFF001D3D,
                           ),
-
                           elevation: 0,
-
                           padding:
                               EdgeInsets
                                   .symmetric(
                             vertical:
                                 15.h,
                           ),
-
                           shape:
                               RoundedRectangleBorder(
                             borderRadius:
@@ -917,21 +936,20 @@ class _CartScreenState extends State<CartScreen> {
                             context,
                           ).showSnackBar(
                             const SnackBar(
-                              content: Text(
+                              content:
+                                  Text(
                                 "Order confirmed",
                               ),
                             ),
                           );
                         },
 
-                        child:
-                            const Text(
+                        child: const Text(
                           "Confirm Order",
-
-                          style:
-                              TextStyle(
+                          style: TextStyle(
                             fontWeight:
-                                FontWeight.bold,
+                                FontWeight
+                                    .bold,
                           ),
                         ),
                       ),
@@ -944,85 +962,60 @@ class _CartScreenState extends State<CartScreen> {
         },
       ),
 
-      // Lab Activity 3 - Enhancement 2: Chat FloatingActionButton is hidden
+      // Lab Activity 3 - Enhancement 2: Chat remains hidden specifically while the user is on CartScreen.
       bottomNavigationBar:
-          BottomAppBar(
-        child: SizedBox(
-          height: 65.h,
+          BottomNavigationBar(
+        currentIndex: 1,
 
-          child: Row(
-            mainAxisAlignment:
-                MainAxisAlignment
-                    .spaceAround,
+        type:
+            BottomNavigationBarType.fixed,
 
-            children: [
-              Expanded(
-                child: InkWell(
-                  onTap: () {
-                    Navigator.pop(
-                      context,
-                    );
-                  },
-
-                  child:
-                      const Column(
-                    mainAxisAlignment:
-                        MainAxisAlignment
-                            .center,
-
-                    children: [
-                      Icon(
-                        Icons.home,
-                        color:
-                            Colors.grey,
-                      ),
-
-                      Text(
-                        "Home",
-                        style:
-                            TextStyle(
-                          color:
-                              Colors.grey,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-
-              SizedBox(
-                width: 70.w,
-              ),
-
-              const Expanded(
-                child: Column(
-                  mainAxisAlignment:
-                      MainAxisAlignment
-                          .center,
-
-                  children: [
-                    Icon(
-                      Icons.shopping_cart,
-                      color: Color(
-                        0xFFCCA000,
-                      ),
-                    ),
-
-                    Text(
-                      "Cart",
-                      style:
-                          TextStyle(
-                        color: Color(
-                          0xFFCCA000,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
+        selectedItemColor:
+            const Color(
+          0xFFCCA000,
         ),
+
+        unselectedItemColor:
+            Colors.grey,
+
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(
+              Icons.home,
+            ),
+            label: "Home",
+          ),
+
+          BottomNavigationBarItem(
+            icon: Icon(
+              Icons.shopping_cart,
+            ),
+            label: "Cart",
+          ),
+
+          BottomNavigationBarItem(
+            icon: Icon(
+              Icons.person,
+            ),
+            label: "Profile",
+          ),
+        ],
+
+        onTap: (index) {
+          if (index == 0) {
+            Navigator.pushReplacementNamed(
+              context,
+              '/home',
+            );
+          }
+
+          if (index == 2) {
+            Navigator.pushReplacementNamed(
+              context,
+              '/profile',
+            );
+          }
+        },
       ),
     );
   }

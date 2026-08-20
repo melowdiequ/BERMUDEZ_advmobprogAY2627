@@ -4,9 +4,9 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../models/product.dart';
 import '../services/product_service.dart';
 import '../widgets/product_card.dart';
+import 'cart_screen.dart';
 import 'product_screen.dart';
 import 'settings_screen.dart';
-import 'cart_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({
@@ -77,7 +77,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
       appBar: AppBar(
         backgroundColor:
-            const Color(0xFF001D3D),
+            const Color(
+          0xFF001D3D,
+        ),
 
         elevation: 0,
 
@@ -88,6 +90,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
         actions: [
           IconButton(
+            tooltip: "Settings",
             icon: const Icon(
               Icons.settings,
               color: Color(
@@ -156,6 +159,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 padding: EdgeInsets.all(
                   12.w,
                 ),
+
                 child: TextField(
                   controller:
                       _searchController,
@@ -180,6 +184,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
 
                     filled: true,
+
                     fillColor:
                         Colors.white,
 
@@ -241,12 +246,11 @@ class _HomeScreenState extends State<HomeScreen> {
                                   filteredProducts[
                                       index];
 
-                              // Lab Activity 2 - Enhancement 2: Opens the existing ProductScreen.
                               return ProductCard(
                                 product:
                                     product,
-                                onTap:
-                                    () {
+
+                                onTap: () {
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
@@ -268,8 +272,7 @@ class _HomeScreenState extends State<HomeScreen> {
         },
       ),
 
-      // Lab Activity 3 - Enhancement 2:
-      // Chat FloatingActionButton
+      // Lab Activity 3 - Enhancement 2: Chat remains a true FloatingActionButton and is independent from the bottom navigation.
       floatingActionButton:
           FloatingActionButton(
         backgroundColor:
@@ -287,8 +290,9 @@ class _HomeScreenState extends State<HomeScreen> {
         tooltip: "Chat",
 
         onPressed: () {
-          ScaffoldMessenger.of(context)
-              .showSnackBar(
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(
             const SnackBar(
               content: Text(
                 "Chat selected",
@@ -306,6 +310,7 @@ class _HomeScreenState extends State<HomeScreen> {
           FloatingActionButtonLocation
               .endFloat,
 
+      // Lab Activity 4 - Enhancement 3: Profile is added as the third bottom-navigation destination.
       bottomNavigationBar:
           BottomNavigationBar(
         currentIndex: 0,
@@ -335,6 +340,13 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             label: "Cart",
           ),
+
+          BottomNavigationBarItem(
+            icon: Icon(
+              Icons.person,
+            ),
+            label: "Profile",
+          ),
         ],
 
         onTap: (index) {
@@ -345,6 +357,13 @@ class _HomeScreenState extends State<HomeScreen> {
                 builder: (_) =>
                     const CartScreen(),
               ),
+            );
+          }
+
+          if (index == 2) {
+            Navigator.pushNamed(
+              context,
+              '/profile',
             );
           }
         },

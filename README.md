@@ -108,3 +108,46 @@ The ProductScreen provides an Add to Cart button that passes the selected Produc
 
 DummyJSON simulates the Add Cart operation, meaning the new cart is returned by the API but is not permanently stored on the DummyJSON server.
 
+## Lab Activity 4: User Authentication and Profile Discussion
+
+### Interaction Between User Model, Service, and Screen
+
+The application extends the previous Model-Service-Screen architecture by adding user authentication and persistent user data. The User model represents the authenticated user's information such as the user ID, username, email, first name, last name, gender, profile image, access token, and refresh token.
+
+The UserService is responsible for communicating with the DummyJSON authentication API and managing the user's saved information. The loginUser() method sends the username and password to the authentication endpoint. When the login is successful, the returned user information is converted into a User model and saved locally using SharedPreferences.
+
+The saved user information can later be retrieved using getUserData() and getUser(). This allows the application to access the authenticated user's information without requesting the login API again every time a screen is opened.
+
+The ProfileScreen uses UserService to retrieve the saved User model and displays the user's profile image, full name, username, email, gender, and user ID. This keeps the API and storage logic separated from the user interface.
+
+### Persistent Authentication
+
+The SplashScreen checks whether the user has a saved authentication token using the isLoggedIn() method of UserService. If a valid saved token exists, the user is automatically redirected to the HomeScreen. If there is no saved token, the user is redirected to the SignInScreen.
+
+The SignInScreen uses UserService to authenticate the username and password. After a successful login, the returned user information and authentication tokens are saved in SharedPreferences. Because the data is stored locally, the application can remember the authenticated user even after the application is closed and opened again.
+
+When the user logs out, UserService clears the saved SharedPreferences data and redirects the user back to the SignInScreen.
+
+### Updated Design Pattern
+
+The application continues to follow the Model-Service-Screen design pattern.
+
+The Model layer contains Product, Cart, CartProduct, and User models. These models represent the different types of data used by the application.
+
+The Service layer contains ProductService, CartService, and UserService. ProductService communicates with the Products API, CartService communicates with the Cart API, and UserService handles authentication and persistent user information.
+
+The Screen layer contains the SplashScreen, SignInScreen, HomeScreen, ProductScreen, CartScreen, ProfileScreen, and SettingsScreen. Each screen focuses on displaying information and handling user interaction while the API and storage logic remain inside the service classes.
+
+The Provider pattern continues to manage the application's theme through ThemeProvider, while SharedPreferences is used to persist authenticated user information.
+
+### Rendering the Cart Using the Saved User ID
+
+After a successful login, the authenticated user's ID is saved in SharedPreferences. The CartScreen retrieves the saved User model using UserService and obtains the current user's ID.
+
+The saved user ID is then passed to the CartService getCartByUserId() method. The method sends a request to:
+
+`/carts/user/{userId}`
+
+This allows the CartScreen to display the cart that belongs to the currently authenticated user instead of using a hardcoded user ID.
+
+The same saved user ID is also used when the ProductScreen sends a product to the Add Cart endpoint. This keeps cart operations associated with the authenticated user.
