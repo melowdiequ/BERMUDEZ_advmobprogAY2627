@@ -151,3 +151,19 @@ The saved user ID is then passed to the CartService getCartByUserId() method. Th
 This allows the CartScreen to display the cart that belongs to the currently authenticated user instead of using a hardcoded user ID.
 
 The same saved user ID is also used when the ProductScreen sends a product to the Add Cart endpoint. This keeps cart operations associated with the authenticated user.
+
+## Lab Activity 5: Firebase Authentication
+
+### Discussion
+
+Lab Activity 5 extends the previous authentication implementation by integrating Firebase Authentication while maintaining the existing DummyJSON authentication.
+
+DummyJSON authentication uses an HTTP POST request to the `/auth/login` endpoint using a username and password. After a successful response, the returned user information and authentication token are saved locally. Firebase Authentication uses the FirebaseAuth SDK and authenticates users using an email address and password.
+
+The application supports both authentication methods through UserService. DummyJSON users are authenticated using `loginUser()`, while Firebase users are authenticated using `signIn()`. New Firebase accounts are created using `createAccount()` through the Sign-Up screen, which collects the user's first name, last name, age, contact number, username, email address, and password.
+
+UserService centralizes authentication and account-management operations so that the screens remain focused on the user interface. It handles DummyJSON login, Firebase authentication, account creation, logout, username updates, password changes, account deletion, session checking, and user-data retrieval.
+
+A loginType value is used to identify whether the current user logged in through DummyJSON or Firebase. The Profile screen calls `UserService().getUserData()` and displays different information depending on the authentication method. Firebase users are also provided with account-management functions such as updating their username, changing their password, and deleting their account.
+
+Firebase improves the application by providing built-in authentication, session management, account creation, reauthentication, password management, and account deletion through the FirebaseAuth SDK. This demonstrates the difference between traditional REST API authentication through DummyJSON and authentication through a dedicated backend authentication service.

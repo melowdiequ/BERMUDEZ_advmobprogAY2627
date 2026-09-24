@@ -1,27 +1,35 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 
+import 'firebase_options.dart';
 import 'providers/theme_provider.dart';
 import 'screens/home_screen.dart';
 import 'screens/profile_screen.dart';
 import 'screens/signin_screen.dart';
+import 'screens/signup_screen.dart';
 import 'screens/splash_screen.dart';
 
-void main() async {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await dotenv.load(
-    fileName:
-        "assets/.env",
+    fileName: "assets/.env",
+  );
+
+  // Lab Activity 5: Initializes Firebase before starting the Flutter application.
+  await Firebase.initializeApp(
+    options:
+        DefaultFirebaseOptions
+            .currentPlatform,
   );
 
   runApp(
     ChangeNotifierProvider(
-      create:
-          (_) =>
-              ThemeProvider(),
+      create: (_) =>
+          ThemeProvider(),
       child:
           const MyApp(),
     ),
@@ -46,19 +54,19 @@ class MyApp extends StatelessWidget {
         412,
         715,
       ),
-      minTextAdapt:
-          true,
+      minTextAdapt: true,
       builder:
           (context, child) {
         return MaterialApp(
           debugShowCheckedModeBanner:
               false,
+
           themeMode:
               themeProvider.isDarkMode
                   ? ThemeMode.dark
                   : ThemeMode.light,
-          theme:
-              ThemeData(
+
+          theme: ThemeData(
             brightness:
                 Brightness.light,
             fontFamily:
@@ -90,15 +98,12 @@ class MyApp extends StatelessWidget {
               ),
               foregroundColor:
                   Colors.white,
-              elevation:
-                  0,
+              elevation: 0,
             ),
             cardTheme:
                 CardThemeData(
-              elevation:
-                  4,
-              color:
-                  Colors.white,
+              elevation: 4,
+              color: Colors.white,
               shape:
                   RoundedRectangleBorder(
                 borderRadius:
@@ -119,6 +124,7 @@ class MyApp extends StatelessWidget {
               ),
             ),
           ),
+
           darkTheme:
               ThemeData(
             brightness:
@@ -154,29 +160,29 @@ class MyApp extends StatelessWidget {
               ),
               foregroundColor:
                   Colors.white,
-              elevation:
-                  0,
+              elevation: 0,
             ),
           ),
 
-          // Lab Activity 4 - Enhancement 1: SplashScreen checks the saved authentication state before allowing access to the application.
-          initialRoute:
-              '/',
+          initialRoute: '/',
 
           routes: {
-            '/':
-                (context) =>
-                    const SplashScreen(),
+            '/': (context) =>
+                const SplashScreen(),
 
             '/signin':
                 (context) =>
                     const SignInScreen(),
 
+            // Lab Activity 5 - Enhancement 2: Opens the Firebase account registration screen.
+            '/signup':
+                (context) =>
+                    const SignUpScreen(),
+
             '/home':
                 (context) =>
                     const HomeScreen(),
 
-            // Lab Activity 4 - Enhancement 3: ProfileScreen renders the saved authenticated User model.
             '/profile':
                 (context) =>
                     const ProfileScreen(),

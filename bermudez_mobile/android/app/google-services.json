@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "564457503094",
+    "project_id": "bermudez-advmobprog",
+    "storage_bucket": "bermudez-advmobprog.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:564457503094:android:0f1c6ee0c1a43bbb94a257",
+        "android_client_info": {
+          "package_name": "com.example.bermudez_mobile"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD6-QaROCgnmgiPxpn_P1ioHDjmsaMaO54"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
