@@ -167,3 +167,19 @@ UserService centralizes authentication and account-management operations so that
 A loginType value is used to identify whether the current user logged in through DummyJSON or Firebase. The Profile screen calls `UserService().getUserData()` and displays different information depending on the authentication method. Firebase users are also provided with account-management functions such as updating their username, changing their password, and deleting their account.
 
 Firebase improves the application by providing built-in authentication, session management, account creation, reauthentication, password management, and account deletion through the FirebaseAuth SDK. This demonstrates the difference between traditional REST API authentication through DummyJSON and authentication through a dedicated backend authentication service.
+
+## Lab Activity 6: Firebase Part II
+
+### Discussion
+
+Lab Activity 6 extends the previous Firebase Authentication implementation by integrating Cloud Firestore for real-time chat functionality.
+
+Registered Firebase users are stored in the `Users` collection. Each user document uses the Firebase UID and contains user information such as first name, last name, username, email address, age, and contact number. The Chat List retrieves these records from Firestore using a real-time stream.
+
+When a conversation is started, the Firebase UIDs of the two users are sorted and combined to create a unique chat room ID. Sorting the IDs ensures that both users access the same conversation regardless of who starts the chat. Messages are stored inside the `messages` subcollection of the corresponding document in the `chat_rooms` collection.
+
+Each message stores the sender ID, sender email, receiver ID, message content, timestamp, and message status. The interface temporarily displays a Sending state while the message is being written to Firestore. After it is successfully stored, the message is treated as delivered. When the receiver opens the conversation, the message status is updated to seen.
+
+The Chat List excludes the currently authenticated user by comparing each Firestore user UID with the UID of the logged-in Firebase user. This prevents users from starting a conversation with themselves. If self-chat were allowed, the same Firebase UID would be used as both sender and receiver, resulting in a chat room where the same account represents both sides of the conversation.
+
+A search function was also implemented to allow users to filter registered accounts by name or email address. The Chat Detail screen was redesigned with separate sender and receiver bubbles, message states, and fade and slide animations to create a clearer and smoother messaging experience.

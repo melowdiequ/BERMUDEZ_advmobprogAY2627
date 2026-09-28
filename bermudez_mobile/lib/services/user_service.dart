@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:firebase_auth/firebase_auth.dart' as fb;
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../constants/constants.dart';
 import '../models/user.dart';
@@ -12,6 +13,9 @@ class UserService {
 
   final fb.FirebaseAuth firebaseAuth =
       fb.FirebaseAuth.instance;
+  
+  final FirebaseFirestore firestore =
+    FirebaseFirestore.instance;
 
   // Lab Activity 5 - Enhancement 1: Returns the currently authenticated Firebase user.
   fb.User? get currentFirebaseUser =>
@@ -132,6 +136,20 @@ class UserService {
     await firebaseUser.updateDisplayName(
       username.trim(),
     );
+
+    // Lab Activity 6: Saves the registered Firebase user in Firestore so the account can appear in the Chat List.
+await firestore
+    .collection('Users')
+    .doc(firebaseUser.uid)
+    .set({
+  'uid': firebaseUser.uid,
+  'firstName': firstName.trim(),
+  'lastName': lastName.trim(),
+  'age': age,
+  'contactNo': contactNo.trim(),
+  'username': username.trim(),
+  'email': email.trim(),
+});
 
     final prefs =
         await SharedPreferences.getInstance();

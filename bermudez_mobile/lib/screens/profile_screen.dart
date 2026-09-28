@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../services/user_service.dart';
 import 'cart_screen.dart';
+import 'chat_screen.dart';
 import 'settings_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -15,42 +16,37 @@ class ProfileScreen extends StatefulWidget {
       _ProfileScreenState();
 }
 
-class _ProfileScreenState
-    extends State<ProfileScreen> {
-  final UserService _userService =
-      UserService();
+class _ProfileScreenState extends State<ProfileScreen> {
+  final UserService _userService = UserService();
 
-  late Future<Map<String, dynamic>>
-      _userData;
+  late Future<Map<String, dynamic>> _userData;
 
   @override
   void initState() {
     super.initState();
 
     // Lab Activity 5 - Enhancement 3: Fetches the active user data through UserService and renders information depending on LoginType.
-    _userData =
-        _userService.getUserData();
+    _userData = _userService.getUserData();
   }
 
   void _reloadProfile() {
+    if (!mounted) {
+      return;
+    }
+
     setState(() {
-      _userData =
-          _userService.getUserData();
+      _userData = _userService.getUserData();
     });
   }
 
-  String _value(
-    dynamic value,
-  ) {
+  String _value(dynamic value) {
     if (value == null) {
       return 'Not available';
     }
 
-    final text =
-        value.toString().trim();
+    final text = value.toString().trim();
 
-    if (text.isEmpty ||
-        text == '0') {
+    if (text.isEmpty || text == '0') {
       return 'Not available';
     }
 
@@ -63,8 +59,7 @@ class _ProfileScreenState
     String value,
   ) {
     return Padding(
-      padding:
-          EdgeInsets.symmetric(
+      padding: EdgeInsets.symmetric(
         vertical: 9.h,
       ),
       child: Row(
@@ -72,23 +67,19 @@ class _ProfileScreenState
           Container(
             width: 42.w,
             height: 42.w,
-            decoration:
-                BoxDecoration(
-              color:
-                  const Color(
+            decoration: BoxDecoration(
+              color: const Color(
                 0xFF003566,
               ).withValues(
                 alpha: 0.08,
               ),
-              borderRadius:
-                  BorderRadius.circular(
+              borderRadius: BorderRadius.circular(
                 11.r,
               ),
             ),
             child: Icon(
               icon,
-              color:
-                  const Color(
+              color: const Color(
                 0xFF003566,
               ),
               size: 21.sp,
@@ -99,17 +90,14 @@ class _ProfileScreenState
           ),
           Expanded(
             child: Column(
-              crossAxisAlignment:
-                  CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   label,
                   style: TextStyle(
-                    fontFamily:
-                        "Poppins",
+                    fontFamily: "Poppins",
                     fontSize: 11.sp,
-                    color:
-                        Colors.grey.shade600,
+                    color: Colors.grey.shade600,
                   ),
                 ),
                 SizedBox(
@@ -118,11 +106,9 @@ class _ProfileScreenState
                 Text(
                   value,
                   style: TextStyle(
-                    fontFamily:
-                        "Poppins",
+                    fontFamily: "Poppins",
                     fontSize: 14.sp,
-                    fontWeight:
-                        FontWeight.w600,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ],
@@ -139,31 +125,24 @@ class _ProfileScreenState
   }) {
     return Container(
       width: double.infinity,
-      padding:
-          EdgeInsets.all(
+      padding: EdgeInsets.all(
         17.w,
       ),
-      margin:
-          EdgeInsets.only(
+      margin: EdgeInsets.only(
         bottom: 14.h,
       ),
-      decoration:
-          BoxDecoration(
-        color:
-            Theme.of(context).cardColor,
-        borderRadius:
-            BorderRadius.circular(
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(
           18.r,
         ),
         boxShadow: [
           BoxShadow(
-            color:
-                Colors.black.withValues(
+            color: Colors.black.withValues(
               alpha: 0.05,
             ),
             blurRadius: 10,
-            offset:
-                const Offset(
+            offset: const Offset(
               0,
               3,
             ),
@@ -171,19 +150,15 @@ class _ProfileScreenState
         ],
       ),
       child: Column(
-        crossAxisAlignment:
-            CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             title,
             style: TextStyle(
-              fontFamily:
-                  "Poppins",
+              fontFamily: "Poppins",
               fontSize: 16.sp,
-              fontWeight:
-                  FontWeight.bold,
-              color:
-                  const Color(
+              fontWeight: FontWeight.bold,
+              color: const Color(
                 0xFF003566,
               ),
             ),
@@ -197,74 +172,28 @@ class _ProfileScreenState
     );
   }
 
+  // Lab Activity 5 - Enhancement 3: Opens a lifecycle-safe dialog for updating the Firebase username.
   Future<void> _showUpdateUsernameDialog(
     String currentUsername,
   ) async {
-    final controller =
-        TextEditingController(
-      text: currentUsername,
-    );
-
-    final result =
-        await showDialog<String>(
+    final newUsername = await showDialog<String>(
       context: context,
+      barrierDismissible: false,
       builder: (dialogContext) {
-        return AlertDialog(
-          title: const Text(
-            "Update Username",
-          ),
-          content: TextField(
-            controller: controller,
-            decoration:
-                const InputDecoration(
-              labelText:
-                  "New Username",
-              prefixIcon:
-                  Icon(
-                Icons.person_outline,
-              ),
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(
-                  dialogContext,
-                );
-              },
-              child:
-                  const Text(
-                "Cancel",
-              ),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pop(
-                  dialogContext,
-                  controller.text.trim(),
-                );
-              },
-              child:
-                  const Text(
-                "Update",
-              ),
-            ),
-          ],
+        return _UpdateUsernameDialog(
+          currentUsername: currentUsername,
         );
       },
     );
 
-    controller.dispose();
-
-    if (result == null ||
-        result.isEmpty) {
+    if (newUsername == null ||
+        newUsername.trim().isEmpty) {
       return;
     }
 
     try {
-      await _userService
-          .updateUsername(
-        username: result,
+      await _userService.updateUsername(
+        username: newUsername.trim(),
       );
 
       if (!mounted) {
@@ -273,8 +202,7 @@ class _ProfileScreenState
 
       _reloadProfile();
 
-      ScaffoldMessenger.of(context)
-          .showSnackBar(
+      ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text(
             "Username updated successfully.",
@@ -286,8 +214,7 @@ class _ProfileScreenState
         return;
       }
 
-      ScaffoldMessenger.of(context)
-          .showSnackBar(
+      ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
             "Unable to update username: $e",
@@ -297,142 +224,35 @@ class _ProfileScreenState
     }
   }
 
+  // Lab Activity 5 - Enhancement 3: Opens a lifecycle-safe password dialog and reauthenticates the Firebase user before changing the password.
   Future<void> _showChangePasswordDialog(
     String email,
   ) async {
-    final currentPasswordController =
-        TextEditingController();
-
-    final newPasswordController =
-        TextEditingController();
-
-    final result =
-        await showDialog<bool>(
+    final passwordData =
+        await showDialog<_PasswordChangeData>(
       context: context,
+      barrierDismissible: false,
       builder: (dialogContext) {
-        return AlertDialog(
-          title:
-              const Text(
-            "Change Password",
-          ),
-          content: Column(
-            mainAxisSize:
-                MainAxisSize.min,
-            children: [
-              TextField(
-                controller:
-                    currentPasswordController,
-                obscureText: true,
-                decoration:
-                    const InputDecoration(
-                  labelText:
-                      "Current Password",
-                  prefixIcon:
-                      Icon(
-                    Icons.lock_outline,
-                  ),
-                ),
-              ),
-              SizedBox(
-                height: 14.h,
-              ),
-              TextField(
-                controller:
-                    newPasswordController,
-                obscureText: true,
-                decoration:
-                    const InputDecoration(
-                  labelText:
-                      "New Password",
-                  prefixIcon:
-                      Icon(
-                    Icons.lock_reset,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(
-                  dialogContext,
-                  false,
-                );
-              },
-              child:
-                  const Text(
-                "Cancel",
-              ),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pop(
-                  dialogContext,
-                  true,
-                );
-              },
-              child:
-                  const Text(
-                "Change",
-              ),
-            ),
-          ],
-        );
+        return const _ChangePasswordDialog();
       },
     );
 
-    if (result != true) {
-      currentPasswordController
-          .dispose();
-      newPasswordController.dispose();
-      return;
-    }
-
-    final currentPassword =
-        currentPasswordController.text;
-
-    final newPassword =
-        newPasswordController.text;
-
-    currentPasswordController.dispose();
-    newPasswordController.dispose();
-
-    if (currentPassword.isEmpty ||
-        newPassword.length < 6) {
-      if (!mounted) {
-        return;
-      }
-
-      ScaffoldMessenger.of(context)
-          .showSnackBar(
-        const SnackBar(
-          content: Text(
-            "Enter your current password and a new password with at least 6 characters.",
-          ),
-        ),
-      );
-
+    if (passwordData == null) {
       return;
     }
 
     try {
-      await _userService
-          .resetPasswordFromCurrentPassword(
-        currentPassword:
-            currentPassword,
-        newPassword:
-            newPassword,
-        email:
-            email,
+      await _userService.resetPasswordFromCurrentPassword(
+        currentPassword: passwordData.currentPassword,
+        newPassword: passwordData.newPassword,
+        email: email,
       );
 
       if (!mounted) {
         return;
       }
 
-      ScaffoldMessenger.of(context)
-          .showSnackBar(
+      ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text(
             "Password changed successfully.",
@@ -444,8 +264,7 @@ class _ProfileScreenState
         return;
       }
 
-      ScaffoldMessenger.of(context)
-          .showSnackBar(
+      ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
             "Unable to change password: $e",
@@ -455,97 +274,24 @@ class _ProfileScreenState
     }
   }
 
+  // Lab Activity 5 - Enhancement 3: Requests the current password before permanently deleting the Firebase account.
   Future<void> _showDeleteAccountDialog(
     String email,
   ) async {
-    final passwordController =
-        TextEditingController();
-
-    final confirmed =
-        await showDialog<bool>(
+    final password = await showDialog<String>(
       context: context,
+      barrierDismissible: false,
       builder: (dialogContext) {
-        return AlertDialog(
-          title:
-              const Text(
-            "Delete Account",
-          ),
-          content: Column(
-            mainAxisSize:
-                MainAxisSize.min,
-            children: [
-              const Text(
-                "This action permanently deletes your Firebase account. Enter your password to continue.",
-              ),
-              SizedBox(
-                height: 15.h,
-              ),
-              TextField(
-                controller:
-                    passwordController,
-                obscureText: true,
-                decoration:
-                    const InputDecoration(
-                  labelText:
-                      "Password",
-                  prefixIcon:
-                      Icon(
-                    Icons.lock_outline,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(
-                  dialogContext,
-                  false,
-                );
-              },
-              child:
-                  const Text(
-                "Cancel",
-              ),
-            ),
-            ElevatedButton(
-              style:
-                  ElevatedButton.styleFrom(
-                backgroundColor:
-                    Colors.red,
-                foregroundColor:
-                    Colors.white,
-              ),
-              onPressed: () {
-                Navigator.pop(
-                  dialogContext,
-                  true,
-                );
-              },
-              child:
-                  const Text(
-                "Delete",
-              ),
-            ),
-          ],
-        );
+        return const _DeleteAccountDialog();
       },
     );
 
-    final password =
-        passwordController.text;
-
-    passwordController.dispose();
-
-    if (confirmed != true ||
-        password.isEmpty) {
+    if (password == null || password.isEmpty) {
       return;
     }
 
     try {
-      await _userService
-          .deleteAccount(
+      await _userService.deleteAccount(
         email: email,
         password: password,
       );
@@ -564,8 +310,7 @@ class _ProfileScreenState
         return;
       }
 
-      ScaffoldMessenger.of(context)
-          .showSnackBar(
+      ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
             "Unable to delete account: $e",
@@ -581,19 +326,15 @@ class _ProfileScreenState
   ) {
     return Scaffold(
       appBar: AppBar(
-        title:
-            const Text(
+        title: const Text(
           "Profile",
         ),
         actions: [
           IconButton(
-            tooltip:
-                "Settings",
-            icon:
-                const Icon(
+            tooltip: "Settings",
+            icon: const Icon(
               Icons.settings,
-              color:
-                  Color(
+              color: Color(
                 0xFFF0CB46,
               ),
             ),
@@ -601,9 +342,8 @@ class _ProfileScreenState
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder:
-                      (_) =>
-                          const SettingsScreen(),
+                  builder: (_) =>
+                      const SettingsScreen(),
                 ),
               );
             },
@@ -613,19 +353,15 @@ class _ProfileScreenState
           ),
         ],
       ),
-      body:
-          FutureBuilder<Map<String, dynamic>>(
-        future:
-            _userData,
-        builder:
-            (context, snapshot) {
+
+      body: FutureBuilder<Map<String, dynamic>>(
+        future: _userData,
+        builder: (context, snapshot) {
           if (snapshot.connectionState ==
               ConnectionState.waiting) {
             return const Center(
-              child:
-                  CircularProgressIndicator(
-                color:
-                    Color(
+              child: CircularProgressIndicator(
+                color: Color(
                   0xFFCCA000,
                 ),
               ),
@@ -634,10 +370,14 @@ class _ProfileScreenState
 
           if (snapshot.hasError) {
             return Center(
-              child: Text(
-                "Unable to load profile: ${snapshot.error}",
-                textAlign:
-                    TextAlign.center,
+              child: Padding(
+                padding: EdgeInsets.all(
+                  20.w,
+                ),
+                child: Text(
+                  "Unable to load profile:\n${snapshot.error}",
+                  textAlign: TextAlign.center,
+                ),
               ),
             );
           }
@@ -650,59 +390,60 @@ class _ProfileScreenState
             );
           }
 
-          final userData =
-              snapshot.data!;
+          final userData = snapshot.data!;
 
           final loginType =
               userData['loginType']
-                  ?.toString()
-                  .toLowerCase() ??
-              '';
+                      ?.toString()
+                      .toLowerCase() ??
+                  '';
 
           final isFirebase =
-              loginType ==
-                  'firebase';
+              loginType == 'firebase';
 
-          final firstName =
-              _value(
+          final firstName = _value(
             userData['firstName'],
           );
 
-          final lastName =
-              _value(
+          final lastName = _value(
             userData['lastName'],
           );
 
-          final fullName =
-              firstName !=
-                          'Not available' ||
-                      lastName !=
-                          'Not available'
-                  ? '${firstName == 'Not available' ? '' : firstName} ${lastName == 'Not available' ? '' : lastName}'
-                      .trim()
-                  : _value(
-                      userData[
-                          'username'],
-                    );
+          String fullName;
 
-          final username =
-              _value(
+          if (firstName != 'Not available' ||
+              lastName != 'Not available') {
+            final first =
+                firstName == 'Not available'
+                    ? ''
+                    : firstName;
+
+            final last =
+                lastName == 'Not available'
+                    ? ''
+                    : lastName;
+
+            fullName =
+                '$first $last'.trim();
+          } else {
+            fullName = _value(
+              userData['username'],
+            );
+          }
+
+          final username = _value(
             userData['username'],
           );
 
-          final email =
-              _value(
+          final email = _value(
             userData['email'],
           );
 
           final image =
-              userData['image']
-                      ?.toString() ??
-                  '';
+              userData['image']?.toString() ?? '';
 
           return SingleChildScrollView(
-            padding:
-                EdgeInsets.fromLTRB(
+            padding: EdgeInsets.fromLTRB(
               18.w,
               25.h,
               18.w,
@@ -713,101 +454,84 @@ class _ProfileScreenState
                 Container(
                   width: 115.w,
                   height: 115.w,
-                  decoration:
-                      BoxDecoration(
-                    shape:
-                        BoxShape.circle,
-                    color:
-                        Colors.grey.shade200,
-                    border:
-                        Border.all(
-                      color:
-                          const Color(
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.grey.shade200,
+                    border: Border.all(
+                      color: const Color(
                         0xFFF0CB46,
                       ),
                       width: 3,
                     ),
                   ),
                   child: ClipOval(
-                    child:
-                        image.isNotEmpty
-                            ? Image.network(
-                                image,
-                                fit:
-                                    BoxFit.cover,
-                                errorBuilder:
-                                    (
-                                  context,
-                                  error,
-                                  stackTrace,
-                                ) {
-                                  return Icon(
-                                    Icons.person,
-                                    size:
-                                        60.sp,
-                                    color:
-                                        Colors.grey,
-                                  );
-                                },
-                              )
-                            : Icon(
+                    child: image.isNotEmpty
+                        ? Image.network(
+                            image,
+                            fit: BoxFit.cover,
+                            errorBuilder: (
+                              context,
+                              error,
+                              stackTrace,
+                            ) {
+                              return Icon(
                                 Icons.person,
-                                size:
-                                    60.sp,
-                                color:
-                                    Colors.grey,
-                              ),
+                                size: 60.sp,
+                                color: Colors.grey,
+                              );
+                            },
+                          )
+                        : Icon(
+                            Icons.person,
+                            size: 60.sp,
+                            color: Colors.grey,
+                          ),
                   ),
                 ),
+
                 SizedBox(
                   height: 16.h,
                 ),
+
                 Text(
                   fullName,
-                  textAlign:
-                      TextAlign.center,
+                  textAlign: TextAlign.center,
                   style: TextStyle(
-                    fontFamily:
-                        "Poppins",
+                    fontFamily: "Poppins",
                     fontSize: 22.sp,
-                    fontWeight:
-                        FontWeight.bold,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
+
                 SizedBox(
                   height: 3.h,
                 ),
+
                 Text(
                   "@$username",
                   style: TextStyle(
-                    fontFamily:
-                        "Poppins",
+                    fontFamily: "Poppins",
                     fontSize: 13.sp,
-                    color:
-                        Colors.grey.shade600,
+                    color: Colors.grey.shade600,
                   ),
                 ),
+
                 SizedBox(
                   height: 8.h,
                 ),
+
                 Container(
-                  padding:
-                      EdgeInsets.symmetric(
-                    horizontal:
-                        12.w,
-                    vertical:
-                        6.h,
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 12.w,
+                    vertical: 6.h,
                   ),
-                  decoration:
-                      BoxDecoration(
-                    color:
-                        const Color(
+                  decoration: BoxDecoration(
+                    color: const Color(
                       0xFFF0CB46,
                     ).withValues(
                       alpha: 0.18,
                     ),
-                    borderRadius:
-                        BorderRadius.circular(
+                    borderRadius: BorderRadius.circular(
                       20.r,
                     ),
                   ),
@@ -816,32 +540,29 @@ class _ProfileScreenState
                         ? "Firebase Account"
                         : "DummyJSON Account",
                     style: TextStyle(
-                      fontFamily:
-                          "Poppins",
-                      fontSize:
-                          11.sp,
-                      fontWeight:
-                          FontWeight.w600,
-                      color:
-                          const Color(
+                      fontFamily: "Poppins",
+                      fontSize: 11.sp,
+                      fontWeight: FontWeight.w600,
+                      color: const Color(
                         0xFF001D3D,
                       ),
                     ),
                   ),
                 ),
+
                 SizedBox(
                   height: 25.h,
                 ),
 
                 _sectionCard(
-                  title:
-                      "Personal Information",
+                  title: "Personal Information",
                   children: [
                     _informationRow(
                       Icons.email_outlined,
                       "Email",
                       email,
                     ),
+
                     if (isFirebase) ...[
                       _informationRow(
                         Icons.cake_outlined,
@@ -854,8 +575,7 @@ class _ProfileScreenState
                         Icons.phone_outlined,
                         "Contact Number",
                         _value(
-                          userData[
-                              'contactNo'],
+                          userData['contactNo'],
                         ),
                       ),
                     ] else ...[
@@ -863,8 +583,7 @@ class _ProfileScreenState
                         Icons.person_outline,
                         "Gender",
                         _value(
-                          userData[
-                              'gender'],
+                          userData['gender'],
                         ),
                       ),
                     ],
@@ -872,21 +591,20 @@ class _ProfileScreenState
                 ),
 
                 _sectionCard(
-                  title:
-                      "Account Information",
+                  title: "Account Information",
                   children: [
                     _informationRow(
                       Icons.alternate_email,
                       "Username",
                       username,
                     ),
+
                     if (isFirebase)
                       _informationRow(
                         Icons.fingerprint,
                         "Firebase UID",
                         _value(
-                          userData[
-                              'firebaseUid'],
+                          userData['firebaseUid'],
                         ),
                       )
                     else
@@ -897,6 +615,7 @@ class _ProfileScreenState
                           userData['id'],
                         ),
                       ),
+
                     _informationRow(
                       Icons.login,
                       "Login Type",
@@ -909,26 +628,21 @@ class _ProfileScreenState
 
                 if (isFirebase)
                   _sectionCard(
-                    title:
-                        "Account Management",
+                    title: "Account Management",
                     children: [
                       ListTile(
                         contentPadding:
                             EdgeInsets.zero,
-                        leading:
-                            const Icon(
+                        leading: const Icon(
                           Icons.edit_outlined,
-                          color:
-                              Color(
+                          color: Color(
                             0xFF003566,
                           ),
                         ),
-                        title:
-                            const Text(
+                        title: const Text(
                           "Update Username",
                         ),
-                        trailing:
-                            const Icon(
+                        trailing: const Icon(
                           Icons.chevron_right,
                         ),
                         onTap: () {
@@ -940,23 +654,20 @@ class _ProfileScreenState
                           );
                         },
                       ),
+
                       ListTile(
                         contentPadding:
                             EdgeInsets.zero,
-                        leading:
-                            const Icon(
+                        leading: const Icon(
                           Icons.lock_reset,
-                          color:
-                              Color(
+                          color: Color(
                             0xFF003566,
                           ),
                         ),
-                        title:
-                            const Text(
+                        title: const Text(
                           "Change Password",
                         ),
-                        trailing:
-                            const Icon(
+                        trailing: const Icon(
                           Icons.chevron_right,
                         ),
                         onTap: () {
@@ -965,29 +676,23 @@ class _ProfileScreenState
                           );
                         },
                       ),
+
                       ListTile(
                         contentPadding:
                             EdgeInsets.zero,
-                        leading:
-                            const Icon(
+                        leading: const Icon(
                           Icons.delete_outline,
-                          color:
-                              Colors.red,
+                          color: Colors.red,
                         ),
-                        title:
-                            const Text(
+                        title: const Text(
                           "Delete Account",
-                          style:
-                              TextStyle(
-                            color:
-                                Colors.red,
+                          style: TextStyle(
+                            color: Colors.red,
                           ),
                         ),
-                        trailing:
-                            const Icon(
+                        trailing: const Icon(
                           Icons.chevron_right,
-                          color:
-                              Colors.red,
+                          color: Colors.red,
                         ),
                         onTap: () {
                           _showDeleteAccountDialog(
@@ -1003,7 +708,7 @@ class _ProfileScreenState
         },
       ),
 
-      // Lab Activity 3 - Enhancement 2: Chat remains visible on Profile and hidden only on Cart.
+      // Lab Activity 6: Redirects the Chat FloatingActionButton to the Firestore Chat List UI.
       floatingActionButton:
           FloatingActionButton(
         backgroundColor:
@@ -1014,20 +719,17 @@ class _ProfileScreenState
             const Color(
           0xFF001D3D,
         ),
+        tooltip: "Chat",
         onPressed: () {
-          ScaffoldMessenger.of(
+          Navigator.push(
             context,
-          ).showSnackBar(
-            const SnackBar(
-              content:
-                  Text(
-                "Chat selected",
-              ),
+            MaterialPageRoute(
+              builder: (_) =>
+                  const ChatScreen(),
             ),
           );
         },
-        child:
-            const Icon(
+        child: const Icon(
           Icons.chat,
         ),
       ),
@@ -1046,31 +748,24 @@ class _ProfileScreenState
         ),
         unselectedItemColor:
             Colors.grey,
-        items:
-            const [
+        items: const [
           BottomNavigationBarItem(
-            icon:
-                Icon(
+            icon: Icon(
               Icons.home,
             ),
-            label:
-                "Home",
+            label: "Home",
           ),
           BottomNavigationBarItem(
-            icon:
-                Icon(
+            icon: Icon(
               Icons.shopping_cart,
             ),
-            label:
-                "Cart",
+            label: "Cart",
           ),
           BottomNavigationBarItem(
-            icon:
-                Icon(
+            icon: Icon(
               Icons.person,
             ),
-            label:
-                "Profile",
+            label: "Profile",
           ),
         ],
         onTap: (index) {
@@ -1085,14 +780,483 @@ class _ProfileScreenState
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(
-                builder:
-                    (_) =>
-                        const CartScreen(),
+                builder: (_) =>
+                    const CartScreen(),
               ),
             );
           }
         },
       ),
+    );
+  }
+}
+
+// Owns its TextEditingController for the entire lifetime of the username dialog.
+class _UpdateUsernameDialog
+    extends StatefulWidget {
+  final String currentUsername;
+
+  const _UpdateUsernameDialog({
+    required this.currentUsername,
+  });
+
+  @override
+  State<_UpdateUsernameDialog>
+      createState() =>
+          _UpdateUsernameDialogState();
+}
+
+class _UpdateUsernameDialogState
+    extends State<_UpdateUsernameDialog> {
+  final GlobalKey<FormState> _formKey =
+      GlobalKey<FormState>();
+
+  late final TextEditingController
+      _controller;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _controller =
+        TextEditingController(
+      text: widget.currentUsername,
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+
+    super.dispose();
+  }
+
+  @override
+  Widget build(
+    BuildContext context,
+  ) {
+    return AlertDialog(
+      title: const Text(
+        "Update Username",
+      ),
+      content: Form(
+        key: _formKey,
+        child: TextFormField(
+          controller: _controller,
+          autofocus: true,
+          decoration:
+              const InputDecoration(
+            labelText:
+                "New Username",
+            prefixIcon:
+                Icon(
+              Icons.person_outline,
+            ),
+          ),
+          validator: (value) {
+            final username =
+                value?.trim() ?? '';
+
+            if (username.isEmpty) {
+              return "Username is required";
+            }
+
+            if (username.length < 3) {
+              return "Use at least 3 characters";
+            }
+
+            return null;
+          },
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+          child: const Text(
+            "Cancel",
+          ),
+        ),
+        ElevatedButton(
+          onPressed: () {
+            if (!_formKey.currentState!
+                .validate()) {
+              return;
+            }
+
+            Navigator.of(context).pop(
+              _controller.text.trim(),
+            );
+          },
+          child: const Text(
+            "Update",
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _PasswordChangeData {
+  final String currentPassword;
+  final String newPassword;
+
+  const _PasswordChangeData({
+    required this.currentPassword,
+    required this.newPassword,
+  });
+}
+
+// Owns all password controllers until the password dialog is completely removed from the widget tree.
+class _ChangePasswordDialog
+    extends StatefulWidget {
+  const _ChangePasswordDialog();
+
+  @override
+  State<_ChangePasswordDialog>
+      createState() =>
+          _ChangePasswordDialogState();
+}
+
+class _ChangePasswordDialogState
+    extends State<_ChangePasswordDialog> {
+  final GlobalKey<FormState> _formKey =
+      GlobalKey<FormState>();
+
+  final TextEditingController
+      _currentPasswordController =
+      TextEditingController();
+
+  final TextEditingController
+      _newPasswordController =
+      TextEditingController();
+
+  final TextEditingController
+      _confirmPasswordController =
+      TextEditingController();
+
+  bool _obscureCurrent = true;
+  bool _obscureNew = true;
+  bool _obscureConfirm = true;
+
+  @override
+  void dispose() {
+    _currentPasswordController.dispose();
+    _newPasswordController.dispose();
+    _confirmPasswordController.dispose();
+
+    super.dispose();
+  }
+
+  @override
+  Widget build(
+    BuildContext context,
+  ) {
+    return AlertDialog(
+      title: const Text(
+        "Change Password",
+      ),
+      content: Form(
+        key: _formKey,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize:
+                MainAxisSize.min,
+            children: [
+              TextFormField(
+                controller:
+                    _currentPasswordController,
+                obscureText:
+                    _obscureCurrent,
+                decoration:
+                    InputDecoration(
+                  labelText:
+                      "Current Password",
+                  prefixIcon:
+                      const Icon(
+                    Icons.lock_outline,
+                  ),
+                  suffixIcon:
+                      IconButton(
+                    onPressed: () {
+                      setState(() {
+                        _obscureCurrent =
+                            !_obscureCurrent;
+                      });
+                    },
+                    icon: Icon(
+                      _obscureCurrent
+                          ? Icons
+                              .visibility_off_outlined
+                          : Icons
+                              .visibility_outlined,
+                    ),
+                  ),
+                ),
+                validator: (value) {
+                  if (value == null ||
+                      value.isEmpty) {
+                    return "Current password is required";
+                  }
+
+                  return null;
+                },
+              ),
+
+              SizedBox(
+                height: 14.h,
+              ),
+
+              TextFormField(
+                controller:
+                    _newPasswordController,
+                obscureText:
+                    _obscureNew,
+                decoration:
+                    InputDecoration(
+                  labelText:
+                      "New Password",
+                  prefixIcon:
+                      const Icon(
+                    Icons.lock_reset,
+                  ),
+                  suffixIcon:
+                      IconButton(
+                    onPressed: () {
+                      setState(() {
+                        _obscureNew =
+                            !_obscureNew;
+                      });
+                    },
+                    icon: Icon(
+                      _obscureNew
+                          ? Icons
+                              .visibility_off_outlined
+                          : Icons
+                              .visibility_outlined,
+                    ),
+                  ),
+                ),
+                validator: (value) {
+                  if (value == null ||
+                      value.length < 6) {
+                    return "Use at least 6 characters";
+                  }
+
+                  return null;
+                },
+              ),
+
+              SizedBox(
+                height: 14.h,
+              ),
+
+              TextFormField(
+                controller:
+                    _confirmPasswordController,
+                obscureText:
+                    _obscureConfirm,
+                decoration:
+                    InputDecoration(
+                  labelText:
+                      "Confirm New Password",
+                  prefixIcon:
+                      const Icon(
+                    Icons.lock_outline,
+                  ),
+                  suffixIcon:
+                      IconButton(
+                    onPressed: () {
+                      setState(() {
+                        _obscureConfirm =
+                            !_obscureConfirm;
+                      });
+                    },
+                    icon: Icon(
+                      _obscureConfirm
+                          ? Icons
+                              .visibility_off_outlined
+                          : Icons
+                              .visibility_outlined,
+                    ),
+                  ),
+                ),
+                validator: (value) {
+                  if (value !=
+                      _newPasswordController
+                          .text) {
+                    return "Passwords do not match";
+                  }
+
+                  return null;
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+          child: const Text(
+            "Cancel",
+          ),
+        ),
+        ElevatedButton(
+          onPressed: () {
+            if (!_formKey.currentState!
+                .validate()) {
+              return;
+            }
+
+            Navigator.of(context).pop(
+              _PasswordChangeData(
+                currentPassword:
+                    _currentPasswordController
+                        .text,
+                newPassword:
+                    _newPasswordController
+                        .text,
+              ),
+            );
+          },
+          child: const Text(
+            "Change",
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// Owns its password controller until the delete confirmation dialog is fully disposed.
+class _DeleteAccountDialog
+    extends StatefulWidget {
+  const _DeleteAccountDialog();
+
+  @override
+  State<_DeleteAccountDialog>
+      createState() =>
+          _DeleteAccountDialogState();
+}
+
+class _DeleteAccountDialogState
+    extends State<_DeleteAccountDialog> {
+  final GlobalKey<FormState> _formKey =
+      GlobalKey<FormState>();
+
+  final TextEditingController
+      _passwordController =
+      TextEditingController();
+
+  bool _obscurePassword = true;
+
+  @override
+  void dispose() {
+    _passwordController.dispose();
+
+    super.dispose();
+  }
+
+  @override
+  Widget build(
+    BuildContext context,
+  ) {
+    return AlertDialog(
+      title: const Text(
+        "Delete Account",
+      ),
+      content: Form(
+        key: _formKey,
+        child: Column(
+          mainAxisSize:
+              MainAxisSize.min,
+          children: [
+            const Text(
+              "This action permanently deletes your Firebase account. Enter your password to continue.",
+            ),
+
+            SizedBox(
+              height: 15.h,
+            ),
+
+            TextFormField(
+              controller:
+                  _passwordController,
+              obscureText:
+                  _obscurePassword,
+              decoration:
+                  InputDecoration(
+                labelText:
+                    "Password",
+                prefixIcon:
+                    const Icon(
+                  Icons.lock_outline,
+                ),
+                suffixIcon:
+                    IconButton(
+                  onPressed: () {
+                    setState(() {
+                      _obscurePassword =
+                          !_obscurePassword;
+                    });
+                  },
+                  icon: Icon(
+                    _obscurePassword
+                        ? Icons
+                            .visibility_off_outlined
+                        : Icons
+                            .visibility_outlined,
+                  ),
+                ),
+              ),
+              validator: (value) {
+                if (value == null ||
+                    value.isEmpty) {
+                  return "Password is required";
+                }
+
+                return null;
+              },
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+          child: const Text(
+            "Cancel",
+          ),
+        ),
+        ElevatedButton(
+          style:
+              ElevatedButton.styleFrom(
+            backgroundColor:
+                Colors.red,
+            foregroundColor:
+                Colors.white,
+          ),
+          onPressed: () {
+            if (!_formKey.currentState!
+                .validate()) {
+              return;
+            }
+
+            Navigator.of(context).pop(
+              _passwordController.text,
+            );
+          },
+          child: const Text(
+            "Delete",
+          ),
+        ),
+      ],
     );
   }
 }

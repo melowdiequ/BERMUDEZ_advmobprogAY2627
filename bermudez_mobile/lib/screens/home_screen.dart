@@ -5,6 +5,7 @@ import '../models/product.dart';
 import '../services/product_service.dart';
 import '../widgets/product_card.dart';
 import 'cart_screen.dart';
+import 'chat_screen.dart';
 import 'product_screen.dart';
 import 'settings_screen.dart';
 
@@ -18,13 +19,15 @@ class HomeScreen extends StatefulWidget {
       _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState
+    extends State<HomeScreen> {
   final ProductService _productService =
       ProductService();
 
   late Future<List<Product>> products;
 
-  final TextEditingController _searchController =
+  final TextEditingController
+      _searchController =
       TextEditingController();
 
   List<Product> filteredProducts = [];
@@ -35,7 +38,8 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
 
-    products = _productService.getAllProducts();
+    products =
+        _productService.getAllProducts();
   }
 
   void searchProducts(
@@ -80,14 +84,11 @@ class _HomeScreenState extends State<HomeScreen> {
             const Color(
           0xFF001D3D,
         ),
-
         elevation: 0,
-
         title: Image.asset(
           "assets/images/nubdexchange_logo.png",
           height: 45.h,
         ),
-
         actions: [
           IconButton(
             tooltip: "Settings",
@@ -107,21 +108,21 @@ class _HomeScreenState extends State<HomeScreen> {
               );
             },
           ),
-
           SizedBox(
             width: 5.w,
           ),
         ],
       ),
 
-      body: FutureBuilder<List<Product>>(
+      body:
+          FutureBuilder<List<Product>>(
         future: products,
-
         builder: (context, snapshot) {
           if (snapshot.connectionState ==
               ConnectionState.waiting) {
             return const Center(
-              child: CircularProgressIndicator(
+              child:
+                  CircularProgressIndicator(
                 color: Color(
                   0xFFCCA000,
                 ),
@@ -131,50 +132,58 @@ class _HomeScreenState extends State<HomeScreen> {
 
           if (snapshot.hasError) {
             return Center(
-              child: Text(
-                "Error loading products",
-                style: TextStyle(
-                  fontFamily: "Poppins",
-                  color: Theme.of(context)
-                      .colorScheme
-                      .primary,
+              child: Padding(
+                padding:
+                    EdgeInsets.all(
+                  20.w,
+                ),
+                child: Text(
+                  "Error loading products:\n${snapshot.error}",
+                  textAlign:
+                      TextAlign.center,
+                  style: TextStyle(
+                    fontFamily:
+                        "Poppins",
+                  ),
                 ),
               ),
             );
           }
 
-          final List<Product> productList =
+          final List<Product>
+              productList =
               snapshot.data ?? [];
 
           if (!_productsInitialized) {
             filteredProducts =
-                List.from(productList);
+                List.from(
+              productList,
+            );
 
-            _productsInitialized = true;
+            _productsInitialized =
+                true;
           }
 
           return Column(
             children: [
               Padding(
-                padding: EdgeInsets.all(
+                padding:
+                    EdgeInsets.all(
                   12.w,
                 ),
-
                 child: TextField(
                   controller:
                       _searchController,
-
                   onChanged: (value) {
                     searchProducts(
                       value,
                       productList,
                     );
                   },
-
-                  decoration: InputDecoration(
+                  decoration:
+                      InputDecoration(
                     hintText:
                         "Search products",
-
                     prefixIcon:
                         const Icon(
                       Icons.search,
@@ -182,12 +191,9 @@ class _HomeScreenState extends State<HomeScreen> {
                         0xFF003566,
                       ),
                     ),
-
                     filled: true,
-
                     fillColor:
                         Colors.white,
-
                     border:
                         OutlineInputBorder(
                       borderRadius:
@@ -203,11 +209,13 @@ class _HomeScreenState extends State<HomeScreen> {
 
               Expanded(
                 child:
-                    filteredProducts.isEmpty
+                    filteredProducts
+                            .isEmpty
                         ? Center(
                             child: Text(
                               "No products found",
-                              style: TextStyle(
+                              style:
+                                  TextStyle(
                                 fontFamily:
                                     "Poppins",
                                 fontSize:
@@ -215,12 +223,12 @@ class _HomeScreenState extends State<HomeScreen> {
                               ),
                             ),
                           )
-                        : GridView.builder(
+                        : GridView
+                            .builder(
                             padding:
                                 EdgeInsets.all(
                               12.w,
                             ),
-
                             gridDelegate:
                                 const SliverGridDelegateWithFixedCrossAxisCount(
                               crossAxisCount:
@@ -232,11 +240,9 @@ class _HomeScreenState extends State<HomeScreen> {
                               childAspectRatio:
                                   0.65,
                             ),
-
                             itemCount:
                                 filteredProducts
                                     .length,
-
                             itemBuilder:
                                 (
                               context,
@@ -249,7 +255,6 @@ class _HomeScreenState extends State<HomeScreen> {
                               return ProductCard(
                                 product:
                                     product,
-
                                 onTap: () {
                                   Navigator.push(
                                     context,
@@ -272,35 +277,28 @@ class _HomeScreenState extends State<HomeScreen> {
         },
       ),
 
-      // Lab Activity 3 - Enhancement 2: Chat remains a true FloatingActionButton and is independent from the bottom navigation.
+      // Lab Activity 6: The Chat FloatingActionButton now redirects to the Firestore Chat List UI.
       floatingActionButton:
           FloatingActionButton(
         backgroundColor:
             const Color(
           0xFFF0CB46,
         ),
-
         foregroundColor:
             const Color(
           0xFF001D3D,
         ),
-
         elevation: 5,
-
         tooltip: "Chat",
-
         onPressed: () {
-          ScaffoldMessenger.of(
+          Navigator.push(
             context,
-          ).showSnackBar(
-            const SnackBar(
-              content: Text(
-                "Chat selected",
-              ),
+            MaterialPageRoute(
+              builder: (_) =>
+                  const ChatScreen(),
             ),
           );
         },
-
         child: const Icon(
           Icons.chat,
         ),
@@ -310,22 +308,17 @@ class _HomeScreenState extends State<HomeScreen> {
           FloatingActionButtonLocation
               .endFloat,
 
-      // Lab Activity 4 - Enhancement 3: Profile is added as the third bottom-navigation destination.
       bottomNavigationBar:
           BottomNavigationBar(
         currentIndex: 0,
-
         type:
             BottomNavigationBarType.fixed,
-
         selectedItemColor:
             const Color(
           0xFFCCA000,
         ),
-
         unselectedItemColor:
             Colors.grey,
-
         items: const [
           BottomNavigationBarItem(
             icon: Icon(
@@ -333,14 +326,12 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             label: "Home",
           ),
-
           BottomNavigationBarItem(
             icon: Icon(
               Icons.shopping_cart,
             ),
             label: "Cart",
           ),
-
           BottomNavigationBarItem(
             icon: Icon(
               Icons.person,
@@ -348,7 +339,6 @@ class _HomeScreenState extends State<HomeScreen> {
             label: "Profile",
           ),
         ],
-
         onTap: (index) {
           if (index == 1) {
             Navigator.push(
